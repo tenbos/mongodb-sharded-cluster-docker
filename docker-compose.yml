@@ -1,0 +1,116 @@
+version: '3'
+services:
+  mongo-setup:
+    image: mongo:3.4
+    container_name: mongo-setup
+    entrypoint: ["/scripts/setup.sh"]
+    depends_on:
+      - mongo-router
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+      - mongo-data-0
+      - mongo-data-1
+      - mongo-data-2
+      - mongo-data-3
+      - mongo-data-4
+      - mongo-data-5
+    volumes:
+      - ./scripts:/scripts
+
+  mongo-router:
+    image: mongo:3.4
+    container_name: mongo-router
+    command: mongos --configdb configReplSet/mongo-config-0:27019,mongo-config-1:27019,mongo-config-2:27019
+    ports:
+      - "27017:27017"
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+      - mongo-data-0
+      - mongo-data-1
+      - mongo-data-2
+      - mongo-data-3
+      - mongo-data-4
+      - mongo-data-5
+
+  mongo-config-0:
+    image: mongo:3.4
+    container_name: mongo-config-0
+    command: mongod --configsvr --replSet configReplSet
+    depends_on:
+      - mongo-config-1
+      - mongo-config-2
+
+  mongo-config-1:
+    image: mongo:3.4
+    container_name: mongo-config-1
+    command: mongod --configsvr --replSet configReplSet
+    depends_on:
+      - mongo-config-2
+
+  mongo-config-2:
+    image: mongo:3.4
+    container_name: mongo-config-2
+    command: mongod --configsvr --replSet configReplSet
+
+  mongo-data-0:
+    image: mongo:3.4
+    container_name: mongo-data-0
+    command: mongod --shardsvr --replSet rs0
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+      - mongo-data-1
+      - mongo-data-2
+
+  mongo-data-1:
+    image: mongo:3.4
+    container_name: mongo-data-1
+    command: mongod --shardsvr --replSet rs0
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+      - mongo-data-2
+
+  mongo-data-2:
+    image: mongo:3.4
+    container_name: mongo-data-2
+    command: mongod --shardsvr --replSet rs0
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+
+  mongo-data-3:
+    image: mongo:3.4
+    container_name: mongo-data-3
+    command: mongod --shardsvr --replSet rs1
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+      - mongo-data-4
+      - mongo-data-5
+
+  mongo-data-4:
+    image: mongo:3.4
+    container_name: mongo-data-4
+    command: mongod --shardsvr --replSet rs1
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
+      - mongo-data-5
+
+  mongo-data-5:
+    image: mongo:3.4
+    container_name: mongo-data-5
+    command: mongod --shardsvr --replSet rs1
+    depends_on:
+      - mongo-config-0
+      - mongo-config-1
+      - mongo-config-2
